@@ -85,7 +85,7 @@
           Fullscreen
         </button>
       </header>
-      <iframe id="game-frame" class="w-full flex-1 border-none bg-black" src=""></iframe>
+      <iframe id="game-frame" class="w-full flex-1 border-none bg-black" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"></iframe>
     </div>
   </main>
 
@@ -111,7 +111,7 @@
         return `${sourceBase}/${url}`;
       }
 
-      function buildImageUrl(item, sourceBase, sourceName) {
+      function buildImageUrl(item, sourceBase) {
         let img = item.img || item.image || item.cover || item.icon || '';
         if (/^https?:\/\//.test(img)) return img;
         if (/^\/\//.test(img)) return 'https:' + img;
@@ -136,10 +136,10 @@
 
       async function loadAllCatalogs() {
         const sources = [
-          { name: 'seraph', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/seraph/seraph.json', base: 'https://raw.githack.com/gmshelf/seraph/main' },
-          { name: 'truffled', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/truffled/truffled.json', base: 'https://raw.githack.com/gmshelf/truffled/main' },
-          { name: 'ugs', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/ugs/ugs.json', base: 'https://raw.githack.com/gmshelf/ugs/main' },
-          { name: 'ckv', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/ckv/ckv.json', base: 'https://raw.githack.com/gmshelf/ckv/main' }
+          { name: 'seraph', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/seraph/seraph.json', base: 'https://cdn.jsdelivr.net/gh/gmshelf/seraph' },
+          { name: 'truffled', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/truffled/truffled.json', base: 'https://cdn.jsdelivr.net/gh/gmshelf/truffled' },
+          { name: 'ugs', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/ugs/ugs.json', base: 'https://cdn.jsdelivr.net/gh/gmshelf/ugs' },
+          { name: 'ckv', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/ckv/ckv.json', base: 'https://cdn.jsdelivr.net/gh/gmshelf/ckv' }
         ];
 
         const results = await Promise.all(sources.map(s => fetchCatalog(s.catalog)));
@@ -149,7 +149,7 @@
           const source = sources[idx];
           list.forEach(item => {
             const gameUrl = buildGameUrl(item, source.base);
-            const imageUrl = buildImageUrl(item, source.base, source.name);
+            const imageUrl = buildImageUrl(item, source.base);
 
             if (gameUrl) {
               combined.push({
@@ -204,20 +204,35 @@
         if (window.lucide) lucide.createIcons();
       }
 
-      function openGame(game) {
+      async function openGame(game) {
         if (!game || !game.url) return;
         if (gameTitleDisplay) gameTitleDisplay.textContent = game.title;
-        if (gameFrame) {
-          gameFrame.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-forms allow-popups allow-presentation');
-          gameFrame.src = game.url;
-        }
         if (gameViewport) gameViewport.classList.remove('hidden');
+
+        if (gameFrame) {
+          gameFrame.srcdoc = '<div style="color: #c084fc; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #06040a; font-weight: bold; font-size: 1.2rem;">Loading game...</div>';
+          try {
+            const res = await fetch(game.url);
+            let htmlText = await res.text();
+            const baseFolder = game.url.substring(0, game.url.lastIndexOf('/') + 1);
+
+            if (htmlText.includes('<head>')) {
+              htmlText = htmlText.replace('<head>', `<head><base href="${baseFolder}">`);
+            } else {
+              htmlText = `<base href="${baseFolder}">` + htmlText;
+            }
+
+            gameFrame.srcdoc = htmlText;
+          } catch (e) {
+            gameFrame.srcdoc = '<div style="color: #ef4444; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #06040a; font-weight: bold;">Error loading game content.</div>';
+          }
+        }
       }
 
       if (btnCloseGame) {
         btnCloseGame.addEventListener('click', () => {
           if (gameViewport) gameViewport.classList.add('hidden');
-          if (gameFrame) gameFrame.src = '';
+          if (gameFrame) gameFrame.srcdoc = '';
         });
       }
 
