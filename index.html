@@ -136,10 +136,10 @@
 
       async function loadAllCatalogs() {
         const sources = [
-          { name: 'seraph', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/seraph/seraph.json', base: 'https://cdn.jsdelivr.net/gh/gmshelf/seraph' },
-          { name: 'truffled', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/truffled/truffled.json', base: 'https://cdn.jsdelivr.net/gh/gmshelf/truffled' },
-          { name: 'ugs', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/ugs/ugs.json', base: 'https://cdn.jsdelivr.net/gh/gmshelf/ugs' },
-          { name: 'ckv', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/ckv/ckv.json', base: 'https://cdn.jsdelivr.net/gh/gmshelf/ckv' }
+          { name: 'seraph', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/seraph/seraph.json', base: 'https://raw.githack.com/gmshelf/seraph/main' },
+          { name: 'truffled', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/truffled/truffled.json', base: 'https://raw.githack.com/gmshelf/truffled/main' },
+          { name: 'ugs', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/ugs/ugs.json', base: 'https://raw.githack.com/gmshelf/ugs/main' },
+          { name: 'ckv', catalog: 'https://cdn.jsdelivr.net/gh/gmshelf/ckv/ckv.json', base: 'https://raw.githack.com/gmshelf/ckv/main' }
         ];
 
         const results = await Promise.all(sources.map(s => fetchCatalog(s.catalog)));
